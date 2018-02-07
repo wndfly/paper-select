@@ -1,5 +1,13 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../iron-fit-behavior/iron-fit-behavior.html">
+<link rel="import" href="../iron-dropdown/iron-dropdown.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
 
 <dom-module id="paper-select">
   <template>
@@ -7,9 +15,82 @@
       :host {
         display: block;
       }
+
+      label#label {
+        color: var(--paper-indigo-400);
+        display: block;
+        margin: 2px;
+        padding: 8px 0;
+      }
+
+      label#label[fixed] {
+        color: var(--paper-grey-600);
+        position: fixed;
+      }
+
+      div#selected {
+        flex-direction: row;
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 1px var(--paper-grey-600) solid;
+        min-height: 32px;
+      }
+
+      div#selected[focused] {
+        border-bottom: 2px var(--paper-indigo-600) solid;
+      }
+
+      div#selected div.item {
+        @apply --shadow-elevation-2dp;
+        background-color: var(--paper-indigo-600);
+        color: var(--paper-indigo-50);
+        margin: 2px;
+        padding: 8px;
+        border-radius: 4px;
+        display: flex;
+      }
+
+      div#selected div.item span.clear {
+        --iron-icon-width: 14px;
+        --iron-icon-height: 14px;
+        margin-left: 3px;
+        color: var(--paper-pink-300);
+      }
+
+      iron-dropdown#dropdown {
+        @apply --shadow-elevation-4dp;
+        background-color: var(--paper-grey-50);
+        padding: 0 2px 2px;
+      }
+
+      iron-dropdown paper-input iron-icon {
+        color: var(--paper-grey-600);
+      }
+      
     </style>
+     
+    <label id="label" fixed$="{{ !focused }}">标题</label>
+    <div id="selected" slot="dropdown-trigger" on-tap="open" focused$="{{ focused }}">
+      <template is="dom-repeat" items="{{ selectItems }}">
+        <div class="item" value="{{ item.value }}">
+          <span class="content">{{ item.label }}</span>
+          <span class="clear">
+            <iron-icon icon="close" slot="prefix"></iron-icon>
+          </span>
+        </div>
+      </template>
+    </div>
     
-    <paper-input label="" type="text" value="" name="" error-message=""></paper-input>
+    <iron-dropdown no-overlap horizontal-align="left" vertical-align="top" id="dropdown">
+      <div slot="dropdown-content">
+        <paper-input no-label-float type="text">
+          <iron-icon icon="search" slot="prefix"></iron-icon>
+        </paper-input>
+        <div role="listbox" id="list_items">
+          <slot></slot>
+        </div>
+      </div>
+    </iron-dropdown>
   </template>
 
   <script>
@@ -25,11 +106,69 @@
       static get is() { return 'paper-select'; }
       static get properties() {
         return {
-          prop1: {
-            type: String,
-            value: 'paper-select'
-          }
+          selectItems: {
+            type: Array,
+            value: () => []
+          },          
+          listItems: {
+            type: Array,
+            value: () => []
+          },
+          multi: {
+            type: Boolean,
+            value: false
+          },
+          towLine: {
+            type: Boolean,
+            value: false
+          },
+          focused: {
+            type: Boolean,
+            value: false
+          },
         };
+      }
+
+      static get listeners() {
+        return {};
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        this.querySelectorAll('paper-item').forEach((item, index, arr) => {
+          item.addEventListener('click', this.onSelect.bind(this));
+        });
+
+        this.$.dropdown.positionTarget = this.$.selected;
+        this.$.dropdown.style.width = `${ this.$.selected.clientWidth - 4 }px`;
+      }
+
+      open() {
+        this.focused = true;
+        this.$.dropdown.open();
+      }
+
+      onSelect(event) {        
+        let items = this.selectItems || [];
+        let value = event.target.getAttribute('value');
+        let label = event.target.getAttribute('label');
+
+        if (items.findIndex((item, index, arr) => item.value == value) !== -1) {
+          items = items.filter((item, index, arr) => item.value !== value);
+        } else {
+          items.push({
+            value: value,
+            label: label
+          });
+        }
+
+        this.set('selectItems', items);
+        this._updateGridStyles = this._updateGridStyles || function() {
+          this.updateStyles(); 
+        }.bind(this);
+        console.log(items);
+        console.log(this.selectItems);
       }
     }
 
