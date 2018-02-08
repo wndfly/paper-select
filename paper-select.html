@@ -3,10 +3,7 @@
 <link rel="import" href="../iron-dropdown/iron-dropdown.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 
 <dom-module id="paper-select">
@@ -14,18 +11,6 @@
     <style>
       :host {
         display: block;
-      }
-
-      label#label {
-        color: var(--paper-indigo-400);
-        display: block;
-        margin: 2px;
-        padding: 8px 0;
-      }
-
-      label#label[fixed] {
-        color: var(--paper-grey-600);
-        position: fixed;
       }
 
       div#selected {
@@ -36,8 +21,20 @@
         min-height: 32px;
       }
 
+      div#selected label#label {
+        color: var(--paper-grey-600);
+        display: block;
+        margin: 2px;
+        padding: 8px 0;
+        width: 100%;
+      }
+
       div#selected[focused] {
         border-bottom: 2px var(--paper-indigo-600) solid;
+      }
+
+      div#selected[focused] label#label {
+        color: var(--paper-indigo-400);
       }
 
       div#selected div.item {
@@ -53,8 +50,10 @@
       div#selected div.item span.clear {
         --iron-icon-width: 14px;
         --iron-icon-height: 14px;
+        font-weight: bold;
         margin-left: 3px;
         color: var(--paper-pink-300);
+        cursor: pointer;
       }
 
       iron-dropdown#dropdown {
@@ -66,27 +65,36 @@
       iron-dropdown paper-input iron-icon {
         color: var(--paper-grey-600);
       }
-      
+
+      ::slotted([selected]) {
+        font-weight: bold;
+      }      
     </style>
-     
-    <label id="label" fixed$="{{ !focused }}">标题</label>
+    
     <div id="selected" slot="dropdown-trigger" on-tap="open" focused$="{{ focused }}">
-      <template is="dom-repeat" items="{{ selectItems }}">
-        <div class="item" value="{{ item.value }}">
-          <span class="content">{{ item.label }}</span>
-          <span class="clear">
-            <iron-icon icon="close" slot="prefix"></iron-icon>
-          </span>
-        </div>
-      </template>
+      <label id="label">{{ label }}</label>
+      <dom-repeat items="{{ selectedItems }}" id="selected_items">
+        <template>
+          <div class="item">
+            <span class="content">{{ item.label }}</span>
+            <span class="clear">
+              <iron-icon icon="close"
+                         slot="prefix"
+                         value$="{{ item.value }}"
+                         on-tap="onDelete">
+              </iron-icon>
+            </span>
+          </div>
+        </template>
+      </dom-repeat>
     </div>
     
-    <iron-dropdown no-overlap horizontal-align="left" vertical-align="top" id="dropdown">
+    <iron-dropdown no-overlap horizontal-align="left" vertical-align="top" id="dropdown" on-iron-overlay-closed="close">
       <div slot="dropdown-content">
-        <paper-input no-label-float type="text">
+        <paper-input value="{{ searchText }}" hidden$="{{ !searchable }}" no-label-float type="text">
           <iron-icon icon="search" slot="prefix"></iron-icon>
         </paper-input>
-        <div role="listbox" id="list_items">
+        <div role="listbox">
           <slot></slot>
         </div>
       </div>
@@ -106,11 +114,16 @@
       static get is() { return 'paper-select'; }
       static get properties() {
         return {
-          selectItems: {
-            type: Array,
-            value: () => []
-          },          
-          listItems: {
+          label: {
+            type: String,
+            value: '请选择...'
+          },
+          searchText: {
+            type: String,
+            value: '',
+            observer: 'onSearch'
+          },
+          selectedItems: {
             type: Array,
             value: () => []
           },
@@ -126,6 +139,10 @@
             type: Boolean,
             value: false
           },
+          searchable: {
+            type: Boolean,
+            value: false
+          }
         };
       }
 
@@ -136,8 +153,8 @@
       connectedCallback() {
         super.connectedCallback();
 
-        this.querySelectorAll('paper-item').forEach((item, index, arr) => {
-          item.addEventListener('click', this.onSelect.bind(this));
+        this.querySelectorAll('[option=""]').forEach((item, index, arr) => {
+          item.addEventListener('tap', this.onSelect.bind(this));
         });
 
         this.$.dropdown.positionTarget = this.$.selected;
@@ -149,26 +166,88 @@
         this.$.dropdown.open();
       }
 
-      onSelect(event) {        
-        let items = this.selectItems || [];
-        let value = event.target.getAttribute('value');
-        let label = event.target.getAttribute('label');
+      close() {
+        this.focused = false;
+      }
 
-        if (items.findIndex((item, index, arr) => item.value == value) !== -1) {
-          items = items.filter((item, index, arr) => item.value !== value);
-        } else {
-          items.push({
-            value: value,
-            label: label
+      onSearch() {
+        this.dispatchEvent(
+          new CustomEvent('search', { detail: this.searchText })
+        );
+      }
+
+      onDelete(event) {
+        let element = Polymer.dom(event).localTarget;
+        
+        if (element) {
+          this.selectItem({
+            value: element.getAttribute('value'),
+            label: element.getAttribute('label')
           });
         }
+      }
 
-        this.set('selectItems', items);
-        this._updateGridStyles = this._updateGridStyles || function() {
-          this.updateStyles(); 
-        }.bind(this);
-        console.log(items);
-        console.log(this.selectItems);
+      onSelect(event) { 
+        let element;
+
+        for (let i = 0, e = event.target; i < 3; i++) {
+          if (e.hasAttribute('option')) {
+            element = e;
+            break;
+          } else {
+            e = e.parentNode;
+          }          
+        }
+
+        if (element) {
+          this.selectItem({
+            value: element.getAttribute('value'),
+            label: element.getAttribute('label')
+          });
+        }
+      }
+
+      selectItem(obj) {
+        if (obj) {
+          let items = [];
+          let bRet = true;
+          
+          this.selectedItems.forEach((item, index, arr) => {
+            if (item.value == obj.value) {
+              bRet = false;
+            } else {
+              items.push(item);
+            }
+          });
+
+          if (bRet) {
+            if (this.multi) {
+              items.push(obj);
+            } else {
+              items = [obj];
+            }
+          }
+
+          this.set('selectedItems', items);
+          this.$.selected_items.render();
+          this.$.dropdown.position();
+
+
+          this.querySelectorAll('[option=""]').forEach((item, index, arr) =>{
+            let bRet = true;
+
+            items.forEach((item1, index1, arr1) => {
+              if (item1.value == item.getAttribute('value')) {
+                item.setAttribute('selected', '');
+                bRet = false;
+              }
+            });
+
+            if (bRet) {
+              item.removeAttribute('selected');
+            }
+          });
+        }
       }
     }
 

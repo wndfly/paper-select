@@ -10,6 +10,8 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../paper-item/paper-item.html">
+    <link rel="import" href="../../paper-item/paper-item-body.html">
     <link rel="import" href="../paper-select.html">
 
     <custom-style>
@@ -22,33 +24,33 @@
       <h3>Basic paper-select demo</h3>                
       <demo-snippet>
         <template>
-          <paper-select>
-            <paper-item value="1">
-              <paper-item-body two-line >
+          <paper-select label="选择一项">
+            <paper-item option value="1" label="name1(description1)">
+              <paper-item-body two-line>
                 <div>name1</div>
                 <div secondary>description1</div>
               </paper-item-body>            
             </paper-item>
-            <paper-item value="2">                
-              <paper-item-body two-line >
+            <paper-item option value="2" label="name2(description2)">
+              <paper-item-body two-line>
                 <div>name2</div>
                 <div secondary>description2</div>
               </paper-item-body>            
             </paper-item>
-            <paper-item value="3">                
-              <paper-item-body two-line >
+            <paper-item option value="3" label="name3(description3)">
+              <paper-item-body two-line>
                 <div>name3</div>
                 <div secondary>description3</div>
               </paper-item-body>            
             </paper-item>
-            <paper-item value="4">                
-              <paper-item-body two-line >
+            <paper-item option value="4" label="name4(description4)">
+              <paper-item-body two-line>
                 <div>name4</div>
                 <div secondary>description4</div>
               </paper-item-body>            
             </paper-item>
-            <paper-item value="5">                
-              <paper-item-body two-line >
+            <paper-item option value="5" label="name5(description5)">
+              <paper-item-body two-line>
                 <div>name5</div>
                 <div secondary>description5</div>
               </paper-item-body>            
@@ -58,12 +60,12 @@
       </demo-snippet>
       <demo-snippet>
         <template>
-          <paper-select>
-            <paper-item value="1" label="name1">name1</paper-item>
-            <paper-item value="2" label="name2">name2</paper-item>
-            <paper-item value="3" label="name3">name3</paper-item>
-            <paper-item value="4" label="name4">name4</paper-item>
-            <paper-item value="5" label="name5">name5</paper-item>
+          <paper-select multi searchable>
+            <paper-item option value="1" label="name1">name1</paper-item>
+            <paper-item option value="2" label="name2">name2</paper-item>
+            <paper-item option value="3" label="name3">name3</paper-item>
+            <paper-item option value="4" label="name4">name4</paper-item>
+            <paper-item option value="5" label="name5">name5</paper-item>
           </paper-select>
         </template>        
       </demo-snippet>
