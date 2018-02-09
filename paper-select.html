@@ -1,8 +1,8 @@
 <link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="../iron-fit-behavior/iron-fit-behavior.html">
 <link rel="import" href="../iron-dropdown/iron-dropdown.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 
@@ -11,18 +11,33 @@
     <style>
       :host {
         display: block;
+
+        --paper-select-primary-color: var(--paper-grey-600);
+        --paper-select-primary-disabled-color: var(--paper-grey-400);
+        --paper-select-primary-white-color: var(--paper-grey-50);
+        
+        --paper-select-secondary-color: var(--paper-indigo-600);
+        --paper-select-secondary-disabled-color: var(--paper-indigo-300);
+        --paper-select-secondary-white-color: var(--paper-indigo-50);
+        
+        --paper-select-third-color: var(--paper-pink-600);
+        --paper-select-third-disabled-color: var(--paper-pink-300);
+        
+        --paper-select-fourth-color: var(--paper-red-600);
+        --paper-select-fourth-disabled-color: var(--paper-red-600);
       }
 
       div#selected {
+        position: relative;
         flex-direction: row;
         display: flex;
         flex-wrap: wrap;
-        border-bottom: 1px var(--paper-grey-600) solid;
+        border-bottom: 1px var(--paper-select-primary-color) solid;
         min-height: 32px;
       }
 
       div#selected label#label {
-        color: var(--paper-grey-600);
+        color: var(--paper-select-primary-color);
         display: block;
         margin: 2px;
         padding: 8px 0;
@@ -30,17 +45,37 @@
       }
 
       div#selected[focused] {
-        border-bottom: 2px var(--paper-indigo-600) solid;
+        border-bottom: 2px var(--paper-select-secondary-color) solid;
       }
 
       div#selected[focused] label#label {
-        color: var(--paper-indigo-400);
+        color: var(--paper-select-secondary-color);
+      }
+
+      :host([disabled]) div#selected {
+        border-bottom: 1px var(--paper-select-primary-disabled-color) dashed;
+      }
+
+      :host([disabled]) div#selected label#label {
+        color: var(--paper-select-primary-disabled-color);
+      }
+      
+      :host([disabled]) paper-ripple {
+        display: none;
+      }
+
+      :host([invalid]) div#selected {
+        border-bottom: 2px var(--paper-select-fourth-disabled-color) solid;
+      }
+
+      :host([invalid]) div#selected label#label {
+        color: var(--paper-select-fourth-disabled-color);
       }
 
       div#selected div.item {
         @apply --shadow-elevation-2dp;
-        background-color: var(--paper-indigo-600);
-        color: var(--paper-indigo-50);
+        background-color: var(--paper-select-secondary-color);
+        color: var(--paper-select-secondary-white-color);
         margin: 2px;
         padding: 8px;
         border-radius: 4px;
@@ -48,29 +83,40 @@
       }
 
       div#selected div.item span.clear {
+        margin-left: 3px;
+        color: var(--paper-select-third-color);
+        cursor: pointer;
         --iron-icon-width: 14px;
         --iron-icon-height: 14px;
-        font-weight: bold;
-        margin-left: 3px;
-        color: var(--paper-pink-300);
-        cursor: pointer;
+        --iron-icon: {
+          font-weight: bold;
+        };
+      }
+
+      :host([disabled]) div#selected div.item {
+        background-color: var(--paper-select-secondary-disabled-color);
+      }
+
+      :host([disabled]) div#selected div.item span.clear {
+        color: var(--paper-select-third-disabled-color);
+        cursor: default;
       }
 
       iron-dropdown#dropdown {
         @apply --shadow-elevation-4dp;
-        background-color: var(--paper-grey-50);
+        background-color: var(--paper-select-primary-white-color);
         padding: 0 2px 2px;
       }
 
       iron-dropdown paper-input iron-icon {
-        color: var(--paper-grey-600);
+        color: var(--paper-select-primary-color);
       }
 
       ::slotted([selected]) {
         font-weight: bold;
       }      
     </style>
-    
+
     <div id="selected" slot="dropdown-trigger" on-tap="open" focused$="{{ focused }}">
       <label id="label">{{ label }}</label>
       <dom-repeat items="{{ selectedItems }}" id="selected_items">
@@ -84,9 +130,11 @@
                          on-tap="onDelete">
               </iron-icon>
             </span>
+            <paper-ripple></paper-ripple>
           </div>
         </template>
       </dom-repeat>
+      <paper-ripple></paper-ripple>
     </div>
     
     <iron-dropdown no-overlap horizontal-align="left" vertical-align="top" id="dropdown" on-iron-overlay-closed="close">
@@ -116,22 +164,26 @@
         return {
           label: {
             type: String,
-            value: '请选择...'
+            value: '...'
           },
           searchText: {
             type: String,
             value: '',
             observer: 'onSearch'
           },
+          value: {
+            type: String,
+            value: ''
+          },
+          values: {
+            type: Array,
+            value: () => []
+          },
           selectedItems: {
             type: Array,
             value: () => []
           },
           multi: {
-            type: Boolean,
-            value: false
-          },
-          towLine: {
             type: Boolean,
             value: false
           },
@@ -142,28 +194,73 @@
           searchable: {
             type: Boolean,
             value: false
-          }
+          },
+          disabled: {
+            type: Boolean,
+            value: false
+          },
+          invalid: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+          required: {
+            type: Boolean,
+            value: false
+          }          
         };
       }
 
-      static get listeners() {
+      get listeners() {
         return {};
+      }
+
+      get behaviors() {
+        return [];
+      }
+
+      constructor() {
+        super();
       }
 
       connectedCallback() {
         super.connectedCallback();
 
         this.querySelectorAll('[option=""]').forEach((item, index, arr) => {
+          if (item.hasAttribute('selected')) {
+            this.selectItem({
+              value: item.getAttribute('value'),
+              label: item.getAttribute('label')
+            });
+          }
+          
           item.addEventListener('tap', this.onSelect.bind(this));
         });
 
-        this.$.dropdown.positionTarget = this.$.selected;
+        //this.$.dropdown.positionTarget = this.$.selected;
         this.$.dropdown.style.width = `${ this.$.selected.clientWidth - 4 }px`;
       }
 
+      validate() {
+        this.invalid = this.required && (
+          this.multi && this.values.length == 0 ||
+          !this.multi && !this.value
+        ) ? true : false;
+
+        if (this.invalid) {
+          this.setAttribute('invalid', '');
+        } else {
+          this.removeAttribute('invalid');
+        }
+        
+        return !this.invalid;
+      }
+
       open() {
-        this.focused = true;
-        this.$.dropdown.open();
+        if (!this.disabled) {
+          this.focused = true;
+          this.$.dropdown.open();
+        }        
       }
 
       close() {
@@ -177,13 +274,15 @@
       }
 
       onDelete(event) {
-        let element = Polymer.dom(event).localTarget;
-        
-        if (element) {
-          this.selectItem({
-            value: element.getAttribute('value'),
-            label: element.getAttribute('label')
-          });
+        if (!this.disabled) {
+          let element = Polymer.dom(event).localTarget;
+          
+          if (element) {
+            this.selectItem({
+              value: element.getAttribute('value'),
+              label: element.getAttribute('label')
+            });
+          }
         }
       }
 
@@ -224,10 +323,16 @@
             if (this.multi) {
               items.push(obj);
             } else {
-              items = [obj];
+              items = [obj];            
             }
           }
 
+          if (this.multi) {
+            this.set('values', items.map(item=>item.value));
+          } else {
+            this.value = obj.value;
+          }
+          
           this.set('selectedItems', items);
           this.$.selected_items.render();
           this.$.dropdown.position();

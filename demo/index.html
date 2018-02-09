@@ -10,9 +10,11 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../iron-form/iron-form.html">
     <link rel="import" href="../../paper-item/paper-item.html">
     <link rel="import" href="../../paper-item/paper-item-body.html">
     <link rel="import" href="../paper-select.html">
+    <link rel="import" href="form-demo.html">
 
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles">
@@ -24,7 +26,7 @@
       <h3>Basic paper-select demo</h3>                
       <demo-snippet>
         <template>
-          <paper-select label="选择一项">
+          <paper-select label="选择一项" disabled>
             <paper-item option value="1" label="name1(description1)">
               <paper-item-body two-line>
                 <div>name1</div>
@@ -37,13 +39,13 @@
                 <div secondary>description2</div>
               </paper-item-body>            
             </paper-item>
-            <paper-item option value="3" label="name3(description3)">
+            <paper-item option value="3" selected label="name3(description3)">
               <paper-item-body two-line>
                 <div>name3</div>
                 <div secondary>description3</div>
               </paper-item-body>            
             </paper-item>
-            <paper-item option value="4" label="name4(description4)">
+            <paper-item option value="4" selected label="name4(description4)">
               <paper-item-body two-line>
                 <div>name4</div>
                 <div secondary>description4</div>
@@ -67,6 +69,27 @@
             <paper-item option value="4" label="name4">name4</paper-item>
             <paper-item option value="5" label="name5">name5</paper-item>
           </paper-select>
+        </template>        
+      </demo-snippet>
+      <demo-snippet>
+        <template>
+          <iron-form id="form1">
+            <form> 
+              <paper-select name="gg" searchable required>
+                <paper-item option value="1" label="name1">name1</paper-item>
+                <paper-item option value="2" label="name2">name2</paper-item>
+                <paper-item option value="3" label="name3">name3</paper-item>
+                <paper-item option value="4" label="name4">name4</paper-item>
+                <paper-item option value="5" label="name5">name5</paper-item>
+              </paper-select>
+            </form>
+          </iron-form>
+          <iron-form id="form2">
+            <form> 
+             <paper-input name="dfg" required type="text"></paper-input>
+            </form>
+          </iron-form>
+          <form-demo></form-demo>
         </template>        
       </demo-snippet>
     </div>    

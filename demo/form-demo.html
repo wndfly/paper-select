@@ -1,0 +1,58 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../iron-form/iron-form.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../paper-select.html">
+
+<dom-module id="form-demo">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <iron-form id="form1">
+      <form>
+        <paper-select name="test" searchable required>
+          <paper-item option value="1" label="name1">name1</paper-item>
+          <paper-item option value="2" label="name2">name2</paper-item>
+          <paper-item option value="3" label="name3">name3</paper-item>
+          <paper-item option value="4" label="name4">name4</paper-item>
+          <paper-item option value="5" label="name5">name5</paper-item>
+        </paper-select>
+      </form>
+    </iron-form>
+    <iron-form id="form2">
+      <form>
+        <paper-input name="test" required type="text"></paper-input>
+      </form>
+    </iron-form>
+    <paper-button on-tap="test">Test</paper-button>
+  </template>
+
+  <script>
+    class FormDemo extends Polymer.Element {
+      static get is() { return 'form-demo'; }
+      static get properties() {
+        return { };
+      }
+
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
+      test() {
+        this.$.form1.validate();             
+        this.$.form2.validate();
+      }
+    }
+
+    window.customElements.define(FormDemo.is, FormDemo);
+  </script>
+</dom-module>
