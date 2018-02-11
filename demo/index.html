@@ -15,6 +15,7 @@
     <link rel="import" href="../../paper-item/paper-item-body.html">
     <link rel="import" href="../paper-select.html">
     <link rel="import" href="form-demo.html">
+    <link rel="import" href="search-demo.html">
 
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles">
@@ -63,6 +64,17 @@
       <demo-snippet>
         <template>
           <paper-select multi searchable>
+            <paper-item option value="1" selected label="name1">name1</paper-item>
+            <paper-item option value="2" label="name2">name2</paper-item>
+            <paper-item option value="3" selected label="name3">name3</paper-item>
+            <paper-item option value="4" label="name4">name4</paper-item>
+            <paper-item option value="5" label="name5">name5</paper-item>
+          </paper-select>
+        </template>        
+      </demo-snippet>
+      <demo-snippet>
+        <template>
+          <paper-select multi searchable values='["1","2","3"]'>
             <paper-item option value="1" label="name1">name1</paper-item>
             <paper-item option value="2" label="name2">name2</paper-item>
             <paper-item option value="3" label="name3">name3</paper-item>
@@ -73,23 +85,8 @@
       </demo-snippet>
       <demo-snippet>
         <template>
-          <iron-form id="form1">
-            <form> 
-              <paper-select name="gg" searchable required>
-                <paper-item option value="1" label="name1">name1</paper-item>
-                <paper-item option value="2" label="name2">name2</paper-item>
-                <paper-item option value="3" label="name3">name3</paper-item>
-                <paper-item option value="4" label="name4">name4</paper-item>
-                <paper-item option value="5" label="name5">name5</paper-item>
-              </paper-select>
-            </form>
-          </iron-form>
-          <iron-form id="form2">
-            <form> 
-             <paper-input name="dfg" required type="text"></paper-input>
-            </form>
-          </iron-form>
           <form-demo></form-demo>
+          <search-demo></search-demo>
         </template>        
       </demo-snippet>
     </div>    

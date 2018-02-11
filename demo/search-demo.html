@@ -1,0 +1,83 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../iron-form/iron-form.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../paper-select.html">
+
+<dom-module id="search-demo">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <paper-select name="test" searchable on-search="onSearch">
+      <template is="dom-repeat" items="{{ items }}">
+        <paper-item option value="{{ item.value }}" label="{{ item.label }}">
+          {{ item.label }}
+        </paper-item>
+      </template>
+    </paper-select>
+    
+  </template>
+
+  <script>
+    class SearchDemo extends Polymer.Element {
+      static get is() { return 'search-demo'; }
+      static get properties() {
+        return {
+          items: {
+            type: Array,
+            value: () => [
+              {
+                value: "1",
+                label: "hello"
+              },
+              {
+                value: "2",
+                label: "world"
+              },
+              {
+                value: "3",
+                label: "arch"
+              },
+              {
+                value: "4",
+                label: "is"
+              },
+              {
+                value: "5",
+                label: "best"
+              }
+            ]
+          },
+          items_: {
+            type: Array,
+            value: () => []
+          }
+        };
+      }
+
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.items_ = this.items;
+      }
+
+      onSearch(event, str) {
+        if (str) {
+          this.set('items', this.items.filter(item=>item.label.match(str)));
+        } else {
+          this.set('items', this.items_);
+        }
+      }
+    }
+
+    window.customElements.define(SearchDemo.is, SearchDemo);
+  </script>
+</dom-module>

@@ -226,8 +226,24 @@
       connectedCallback() {
         super.connectedCallback();
 
+        var values = [];
+        
+        if (this.multi) {
+          values = this.values;
+          this.values = [];
+        } else if (this.value) {
+          values.push(this.value);
+          this.value = '';
+        }
+
+        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
+          values.push(item.getAttribute('value'));
+        });
+
+        values = [...new Set(values)];
+
         this.querySelectorAll('[option=""]').forEach((item, index, arr) => {
-          if (item.hasAttribute('selected')) {
+          if (item.hasAttribute('selected') || values.indexOf(item.getAttribute('value')) !== -1) {
             this.selectItem({
               value: item.getAttribute('value'),
               label: item.getAttribute('label')
