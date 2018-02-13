@@ -143,7 +143,7 @@
           <iron-icon icon="search" slot="prefix"></iron-icon>
         </paper-input>
         <div role="listbox">
-          <slot></slot>
+          <slot id="slot"></slot>
         </div>
       </div>
     </iron-dropdown>
@@ -168,7 +168,7 @@
           },
           searchText: {
             type: String,
-            value: '',
+            value: undefined,
             observer: 'onSearch'
           },
           value: {
@@ -226,35 +226,16 @@
       connectedCallback() {
         super.connectedCallback();
 
-        var values = [];
-        
-        if (this.multi) {
-          values = this.values;
-          this.values = [];
-        } else if (this.value) {
-          values.push(this.value);
-          this.value = '';
-        }
-
-        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
-          values.push(item.getAttribute('value'));
-        });
-
-        values = [...new Set(values)];
-
-        this.querySelectorAll('[option=""]').forEach((item, index, arr) => {
-          if (item.hasAttribute('selected') || values.indexOf(item.getAttribute('value')) !== -1) {
-            this.selectItem({
-              value: item.getAttribute('value'),
-              label: item.getAttribute('label')
-            });
-          }
-          
-          item.addEventListener('tap', this.onSelect.bind(this));
-        });
+        //this.initSelectedAndTap();
 
         //this.$.dropdown.positionTarget = this.$.selected;
         this.$.dropdown.style.width = `${ this.$.selected.clientWidth - 4 }px`;
+      }
+
+      ready() {
+        super.ready();
+        
+        this.$.slot.addEventListener('slotchange', this.initSelectedAndTap.bind(this));
       }
 
       validate() {
@@ -320,6 +301,37 @@
             label: element.getAttribute('label')
           });
         }
+      }
+
+      initSelectedAndTap () {
+        var values = [];
+        
+        if (this.multi) {
+          values = this.values;
+          this.values = [];
+        } else if (this.value) {
+          values.push(this.value);
+          this.value = '';
+        }
+
+        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
+          values.push(item.getAttribute('value'));
+        });
+
+        values = [...new Set(values)];
+
+        this.querySelectorAll('[option=""]').forEach((item, index, arr) => {
+          item.removeEventListener('tap', this.onSelect);
+          
+          if (item.hasAttribute('selected') || values.indexOf(item.getAttribute('value')) !== -1) {
+            this.selectItem({
+              value: item.getAttribute('value'),
+              label: item.getAttribute('label')
+            });
+          }
+
+          item.addEventListener('tap', this.onSelect.bind(this));
+        });
       }
 
       selectItem(obj) {

@@ -13,9 +13,9 @@
       }
     </style>
 
-    <paper-select name="test" searchable on-search="onSearch">
+    <paper-select name="test" searchable on-search="onSearch" multi>
       <template is="dom-repeat" items="{{ items }}">
-        <paper-item option value="{{ item.value }}" label="{{ item.label }}">
+        <paper-item option value$="{{ item.value }}" label$="{{ item.label }}">
           {{ item.label }}
         </paper-item>
       </template>
@@ -71,7 +71,7 @@
 
       onSearch(event, str) {
         if (str) {
-          this.set('items', this.items.filter(item=>item.label.match(str)));
+          this.set('items', this.items_.filter(item=>item.label.match(str)));
         } else {
           this.set('items', this.items_);
         }
