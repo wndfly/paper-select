@@ -207,7 +207,7 @@
           required: {
             type: Boolean,
             value: false
-          }          
+          }
         };
       }
 
@@ -227,15 +227,10 @@
         super.connectedCallback();
 
         //this.initSelectedAndTap();
+        this.$.slot.addEventListener('slotchange', this.initSelectedAndTap.bind(this));
 
         //this.$.dropdown.positionTarget = this.$.selected;
         this.$.dropdown.style.width = `${ this.$.selected.clientWidth - 4 }px`;
-      }
-
-      ready() {
-        super.ready();
-        
-        this.$.slot.addEventListener('slotchange', this.initSelectedAndTap.bind(this));
       }
 
       validate() {
@@ -320,17 +315,28 @@
 
         values = [...new Set(values)];
 
-        this.querySelectorAll('[option=""]').forEach((item, index, arr) => {
-          item.removeEventListener('tap', this.onSelect);
-          
+        this.querySelectorAll('[option]').forEach((item, index, arr) => {
+          //item.removeEventListener('tap', this.onSelect);
+
           if (item.hasAttribute('selected') || values.indexOf(item.getAttribute('value')) !== -1) {
-            this.selectItem({
-              value: item.getAttribute('value'),
-              label: item.getAttribute('label')
+            let bRet = true
+            
+            this.selectedItems.forEach((item1, index1, arr1)  => {
+              if (item1.value === item.getAttribute('value')) bRet = false;
             });
+
+            if (bRet) {
+              this.selectItem({
+                value: item.getAttribute('value'),
+                label: item.getAttribute('label')
+              });
+            }            
           }
 
-          item.addEventListener('tap', this.onSelect.bind(this));
+          if (!item.hasAttribute('tap')) {
+            item.addEventListener('tap', this.onSelect.bind(this));
+            item.setAttribute('tap', '');
+          }
         });
       }
 
@@ -365,8 +371,7 @@
           this.$.selected_items.render();
           this.$.dropdown.position();
 
-
-          this.querySelectorAll('[option=""]').forEach((item, index, arr) =>{
+          this.querySelectorAll('[option]').forEach((item, index, arr) =>{
             let bRet = true;
 
             items.forEach((item1, index1, arr1) => {
