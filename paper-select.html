@@ -260,6 +260,10 @@
       }
 
       onSearch() {
+        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
+          item.removeAttribute('selected');
+        });        
+        
         this.dispatchEvent(
           new CustomEvent('search', { detail: this.searchText })
         );
@@ -309,21 +313,26 @@
           this.value = '';
         }
 
-        /* this.querySelectorAll('[selected]').forEach((item, index, arr) => {
-         *   values.push(item.getAttribute('value'));
-         * });*/
+        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
+          values.push(item.getAttribute('value'));
+        });
 
         values = [...new Set(values)];
 
         this.querySelectorAll('[option]').forEach((item, index, arr) => {
           //item.removeEventListener('tap', this.onSelect);
-          item.removeAttribute('selected');
-
-          if (values.indexOf(item.getAttribute('value')) !== -1) {
-            this.selectItem({
-              value: item.getAttribute('value'),
-              label: item.getAttribute('label')
-            });
+          //item.removeAttribute('selected');
+          let value = item.getAttribute('value');
+          
+          if (values.indexOf(value) !== -1) {
+            item.setAttribute('selected', '');
+            
+            if (!this.selectedItems.find(item1 => item1.value == value)) {
+              this.selectItem({
+                value: item.getAttribute('value'),
+                label: item.getAttribute('label')
+              });
+            }
           }
 
           if (!item.hasAttribute('tap')) {
@@ -336,45 +345,33 @@
       selectItem(obj) {
         if (obj) {
           let items = [];
-          let bRet = true;
-          
-          this.selectedItems.forEach((item, index, arr) => {
-            if (item.value == obj.value) {
-              bRet = false;
-            } else {
-              items.push(item);
-            }
-          });
-
-          if (bRet) {
-            if (this.multi) {
-              items.push(obj);
-            } else {
-              items = [obj];            
-            }
-          }
 
           if (this.multi) {
-            this.set('values', items.map(item=>item.value));
+            if (this.selectedItems.find(item => item.value == obj.value)) {
+              items = this.selectedItems.filter(item => item.value != obj.value);
+            } else {
+              items = this.selectedItems;
+              items.push(obj);
+            }
+            
+            this.set('values', items.map(item => item.value));
           } else {
-            this.value = obj.value;
+            if (this.selectedItems.find(item => item.value == obj.value)) {
+              this.value = '';
+            } else {
+              items = [obj];
+              this.value = obj.value;
+            }
           }
           
           this.set('selectedItems', items);
           this.$.selected_items.render();
           this.$.dropdown.position();
 
-          this.querySelectorAll('[option]').forEach((item, index, arr) =>{
-            let bRet = true;
-
-            items.forEach((item1, index1, arr1) => {
-              if (item1.value == item.getAttribute('value')) {
-                item.setAttribute('selected', '');
-                bRet = false;
-              }
-            });
-
-            if (bRet) {
+          this.querySelectorAll('[option]').forEach((item, index, arr) => {
+            if (items.find(item1 => item1.value == item.getAttribute('value'))) {
+              item.setAttribute('selected', '');
+            } else {
               item.removeAttribute('selected');
             }
           });
