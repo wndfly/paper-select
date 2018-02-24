@@ -309,28 +309,21 @@
           this.value = '';
         }
 
-        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
-          values.push(item.getAttribute('value'));
-        });
+        /* this.querySelectorAll('[selected]').forEach((item, index, arr) => {
+         *   values.push(item.getAttribute('value'));
+         * });*/
 
         values = [...new Set(values)];
 
         this.querySelectorAll('[option]').forEach((item, index, arr) => {
           //item.removeEventListener('tap', this.onSelect);
+          item.removeAttribute('selected');
 
-          if (item.hasAttribute('selected') || values.indexOf(item.getAttribute('value')) !== -1) {
-            let bRet = true
-            
-            this.selectedItems.forEach((item1, index1, arr1)  => {
-              if (item1.value === item.getAttribute('value')) bRet = false;
+          if (values.indexOf(item.getAttribute('value')) !== -1) {
+            this.selectItem({
+              value: item.getAttribute('value'),
+              label: item.getAttribute('label')
             });
-
-            if (bRet) {
-              this.selectItem({
-                value: item.getAttribute('value'),
-                label: item.getAttribute('label')
-              });
-            }            
           }
 
           if (!item.hasAttribute('tap')) {
