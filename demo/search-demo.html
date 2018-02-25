@@ -13,14 +13,16 @@
       }
     </style>
 
-    <paper-select name="test" searchable on-search="onSearch" multi>
+    <paper-select name="test" searchable on-search="onSearch" multi values="{{ values }}">
       <template is="dom-repeat" items="{{ items }}">
         <paper-item option value$="{{ item.value }}" label$="{{ item.label }}">
           {{ item.label }}
-        </paper-item>
+        </paper-item>        
       </template>
     </paper-select>
-    
+    <div>
+      {{ values }}
+    </div>
   </template>
 
   <script>
@@ -56,6 +58,10 @@
           items_: {
             type: Array,
             value: () => []
+          },
+          values: {
+            type: Array,
+            value: () => []
           }
         };
       }
@@ -75,7 +81,7 @@
         } else {
           this.set('items', this.items_);
         }
-      }
+      }      
     }
 
     window.customElements.define(SearchDemo.is, SearchDemo);

@@ -173,10 +173,14 @@
           },
           value: {
             type: String,
+            notify: true,
+            reflectToAttribute: true,
             value: ''
           },
           values: {
             type: Array,
+            notify: true,
+            reflectToAttribute: true,
             value: () => []
           },
           selectedItems: {
@@ -262,7 +266,21 @@
       onSearch() {
         this.querySelectorAll('[selected]').forEach((item, index, arr) => {
           item.removeAttribute('selected');
-        });        
+        });
+
+        this.querySelectorAll('[option]').forEach((item, index, arr) => {
+          if (this.searchText) {
+            if (item.getAttribute('label').match(this.searchText)) {
+              item.removeAttribute('hidden');
+            } else {
+              item.setAttribute('hidden', '');
+            }            
+          } else {
+            item.removeAttribute('hidden');
+          }
+        });
+
+        //this.initSelectedAndTap();
         
         this.dispatchEvent(
           new CustomEvent('search', { detail: this.searchText })
