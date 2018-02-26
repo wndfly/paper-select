@@ -117,7 +117,8 @@
       }      
     </style>
 
-    <div id="selected" slot="dropdown-trigger" on-tap="open" focused$="{{ focused }}">
+    <div id="selected" slot="dropdown-trigger" on-tap="open"
+         focused$="{{ focused }}">
       <label id="label">{{ label }}</label>
       <dom-repeat items="{{ selectedItems }}" id="selected_items">
         <template>
@@ -137,9 +138,12 @@
       <paper-ripple></paper-ripple>
     </div>
     
-    <iron-dropdown no-overlap horizontal-align="left" vertical-align="top" id="dropdown" on-iron-overlay-closed="close">
+    <iron-dropdown no-overlap horizontal-align="left"
+                   vertical-align="top"
+                   id="dropdown" on-iron-overlay-closed="close">
       <div slot="dropdown-content">
-        <paper-input value="{{ searchText }}" hidden$="{{ !searchable }}" no-label-float type="text">
+        <paper-input value="{{ searchText }}" hidden$="{{ !searchable }}"
+                     no-label-float type="text">
           <iron-icon icon="search" slot="prefix"></iron-icon>
         </paper-input>
         <div role="listbox">
@@ -174,13 +178,11 @@
           value: {
             type: String,
             notify: true,
-            reflectToAttribute: true,
             value: ''
           },
           values: {
             type: Array,
             notify: true,
-            reflectToAttribute: true,
             value: () => []
           },
           selectedItems: {
@@ -196,6 +198,10 @@
             value: false
           },
           searchable: {
+            type: Boolean,
+            value: false
+          },
+          allowSearchEvent: {
             type: Boolean,
             value: false
           },
@@ -231,7 +237,8 @@
         super.connectedCallback();
 
         //this.initSelectedAndTap();
-        this.$.slot.addEventListener('slotchange', this.initSelectedAndTap.bind(this));
+        this.$.slot.addEventListener('slotchange',
+                                     this.initSelectedAndTap.bind(this));
 
         //this.$.dropdown.positionTarget = this.$.selected;
         this.$.dropdown.style.width = `${ this.$.selected.clientWidth - 4 }px`;
@@ -261,30 +268,31 @@
 
       close() {
         this.focused = false;
+        this.searchText = undefined;
       }
 
       onSearch() {
-        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
-          item.removeAttribute('selected');
-        });
-
-        this.querySelectorAll('[option]').forEach((item, index, arr) => {
-          if (this.searchText) {
-            if (item.getAttribute('label').match(this.searchText)) {
-              item.removeAttribute('hidden');
+        if (this.allowSearchEvent) {
+          this.querySelectorAll('[selected]').forEach((item, index, arr) => {
+            item.removeAttribute('selected');
+          });
+          
+          this.dispatchEvent(
+            new CustomEvent('search', { detail: this.searchText })
+          );        
+        } else {
+          this.querySelectorAll('[option]').forEach((item, index, arr) => {
+            if (this.searchText) {
+              if (item.getAttribute('label').match(this.searchText)) {
+                item.removeAttribute('hidden');
+              } else {
+                item.setAttribute('hidden', '');
+              }            
             } else {
-              item.setAttribute('hidden', '');
-            }            
-          } else {
-            item.removeAttribute('hidden');
-          }
-        });
-
-        //this.initSelectedAndTap();
-        
-        this.dispatchEvent(
-          new CustomEvent('search', { detail: this.searchText })
-        );
+              item.removeAttribute('hidden');
+            }
+          });
+        }        
       }
 
       onDelete(event) {
@@ -300,7 +308,7 @@
         }
       }
 
-      onSelect(event) { 
+      onSelect(event) {
         let element;
 
         for (let i = 0, e = event.target; i < 3; i++) {
@@ -320,8 +328,14 @@
         }
       }
 
-      initSelectedAndTap () {
-        var values = [];
+      initSelectedAndTap (event) {
+        let values = [];
+        let items = [];
+        let slot = Polymer.dom(event).localTarget;
+
+        let options = slot.assignedNodes().filter((item, index, arr) => {
+          return item.matches && item.matches('[option]');
+        });
         
         if (this.multi) {
           values = this.values;
@@ -331,26 +345,32 @@
           this.value = '';
         }
 
-        this.querySelectorAll('[selected]').forEach((item, index, arr) => {
-          values.push(item.getAttribute('value'));
+        options.forEach((item, index, arr) => {          
+          if (item.hasAttribute('selected')) {
+            values.push(item.getAttribute('value'));
+          }
         });
 
         values = [...new Set(values)];
 
-        this.querySelectorAll('[option]').forEach((item, index, arr) => {
-          //item.removeEventListener('tap', this.onSelect);
-          //item.removeAttribute('selected');
+        if (this.multi) {
+          this.set('values', values);
+        } else if (values.length > 0) {
+          values = values[0];
+          this.value = values;
+        }
+
+        options.forEach((item, index, arr) => {
           let value = item.getAttribute('value');
           
           if (values.indexOf(value) !== -1) {
             item.setAttribute('selected', '');
-            
-            if (!this.selectedItems.find(item1 => item1.value == value)) {
-              this.selectItem({
-                value: item.getAttribute('value'),
-                label: item.getAttribute('label')
-              });
-            }
+            items.push({
+              value: item.getAttribute('value'),
+              label: item.getAttribute('label')
+            });            
+          } else {
+            item.removeAttribute('selected');
           }
 
           if (!item.hasAttribute('tap')) {
@@ -358,6 +378,14 @@
             item.setAttribute('tap', '');
           }
         });
+
+        items = items.concat(this.selectedItems.filter((item) => {
+          return !items.find(item1 => item1.value == item.value);
+        }));
+        
+        this.set('selectedItems', items);
+        this.$.selected_items.render();
+        this.$.dropdown.position();
       }
 
       selectItem(obj) {
