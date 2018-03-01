@@ -38,6 +38,7 @@
 
       div#selected label#label {
         color: var(--paper-select-primary-color);
+        font-size: var(--paper-font-subhead_-_font-size);
         display: block;
         margin: 2px;
         padding: 8px 0;
@@ -138,9 +139,10 @@
       <paper-ripple></paper-ripple>
     </div>
     
-    <iron-dropdown no-overlap horizontal-align="left"
+    <iron-dropdown horizontal-align="right"
                    vertical-align="top"
-                   id="dropdown" on-iron-overlay-closed="close">
+                   id="dropdown"
+                   on-iron-overlay-closed="close">
       <div slot="dropdown-content">
         <paper-input value="{{ searchText }}" hidden$="{{ !searchable }}"
                      no-label-float type="text">
@@ -261,7 +263,7 @@
 
       open() {
         if (!this.disabled) {
-          this.focused = true;
+          this.focused = true;          
           this.$.dropdown.open();
         }        
       }
@@ -385,7 +387,7 @@
         
         this.set('selectedItems', items);
         this.$.selected_items.render();
-        this.$.dropdown.position();
+        this.$.dropdown.refit();
       }
 
       selectItem(obj) {
@@ -412,7 +414,6 @@
           
           this.set('selectedItems', items);
           this.$.selected_items.render();
-          this.$.dropdown.position();
 
           this.querySelectorAll('[option]').forEach((item, index, arr) => {
             if (items.find(item1 => item1.value == item.getAttribute('value'))) {
