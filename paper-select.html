@@ -153,6 +153,10 @@
         </div>
       </div>
     </iron-dropdown>
+
+    <input hidden value="{{ value_ }}" name="{{ name }}"
+           required="{{ required }}" disabled="{{ disabled }}" />
+    </template>
   </template>
 
   <script>
@@ -168,6 +172,9 @@
       static get is() { return 'paper-select'; }
       static get properties() {
         return {
+          name: {
+            type: String
+          },
           label: {
             type: String,
             value: '...'
@@ -175,17 +182,25 @@
           searchText: {
             type: String,
             value: undefined,
-            observer: 'onSearch'
+            observer: '_searchTextChanged'
           },
           value: {
             type: String,
             notify: true,
-            value: ''
+            value: undefined,
+            observer: '_valuesChanged'
           },
           values: {
             type: Array,
             notify: true,
-            value: () => []
+            value: undefined,
+            observer: '_valuesChanged'
+          },
+          value_: {
+            type: String,
+            notify: true,
+            value: undefined,
+            observer: '_value_Changed'
           },
           selectedItems: {
             type: Array,
@@ -261,6 +276,14 @@
         return !this.invalid;
       }
 
+      reset() {
+        if (this.multi) {
+          this.set('values', []);
+        } else {
+          this.set('value', undefined);
+        }
+      }
+
       open() {
         if (!this.disabled) {
           this.focused = true;          
@@ -273,7 +296,7 @@
         this.searchText = undefined;
       }
 
-      onSearch() {
+      _searchTextChanged() {
         if (this.allowSearchEvent) {
           this.querySelectorAll('[selected]').forEach((item, index, arr) => {
             item.removeAttribute('selected');
@@ -332,22 +355,19 @@
 
       initSelectedAndTap (event) {
         let values = [];
-        let items = [];
-        let slot = Polymer.dom(event).localTarget;
 
-        let options = slot.assignedNodes().filter((item, index, arr) => {
-          return item.matches && item.matches('[option]');
-        });
+        let options = Polymer.dom(event).localTarget.
+                              assignedNodes().filter((item, index, arr) => {
+                                return item.matches && item.matches('[option]');
+                              });
         
         if (this.multi) {
-          values = this.values;
-          this.values = [];
+          values = this.values ? this.values: [];
         } else if (this.value) {
           values.push(this.value);
-          this.value = '';
         }
 
-        options.forEach((item, index, arr) => {          
+        options.forEach((item, index, arr) => {
           if (item.hasAttribute('selected')) {
             values.push(item.getAttribute('value'));
           }
@@ -358,43 +378,24 @@
         if (this.multi) {
           this.set('values', values);
         } else if (values.length > 0) {
-          values = values[0];
-          this.value = values;
+          this.set('value', values[0]);
         }
 
         options.forEach((item, index, arr) => {
-          let value = item.getAttribute('value');
-          
-          if (values.indexOf(value) !== -1) {
-            item.setAttribute('selected', '');
-            items.push({
-              value: item.getAttribute('value'),
-              label: item.getAttribute('label')
-            });            
-          } else {
-            item.removeAttribute('selected');
-          }
-
           if (!item.hasAttribute('tap')) {
             item.addEventListener('tap', this.onSelect.bind(this));
             item.setAttribute('tap', '');
           }
         });
 
-        items = items.concat(this.selectedItems.filter((item) => {
-          return !items.find(item1 => item1.value == item.value);
-        }));
-        
-        this.set('selectedItems', items);
-        this.$.selected_items.render();
         this.$.dropdown.refit();
       }
 
       selectItem(obj) {
         if (obj) {
-          let items = [];
-
           if (this.multi) {
+            let items = [];
+            
             if (this.selectedItems.find(item => item.value == obj.value)) {
               items = this.selectedItems.filter(item => item.value != obj.value);
             } else {
@@ -405,23 +406,67 @@
             this.set('values', items.map(item => item.value));
           } else {
             if (this.selectedItems.find(item => item.value == obj.value)) {
-              this.value = '';
+              this.set('value', undefined);
             } else {
-              items = [obj];
-              this.value = obj.value;
+              this.set('value', obj.value);
             }
-          }
-          
-          this.set('selectedItems', items);
-          this.$.selected_items.render();
+          }          
+        }
+      }
 
-          this.querySelectorAll('[option]').forEach((item, index, arr) => {
-            if (items.find(item1 => item1.value == item.getAttribute('value'))) {
+      _valuesChanged() {
+        let items = this.selectedItems.filter((item, index, arr) => {
+          if (this.multi) {
+            return this.values.indexOf(item.value) !== -1;
+          } else {
+            return this.value == item.value;
+          }
+        });
+
+        if (this.multi) {
+          this.set('value_', JSON.stringify(this.values));
+        } else {
+          this.set('value_', this.value);
+        }
+
+        this.querySelectorAll('[option]').forEach((item, index, arr) => {
+          let value = item.getAttribute('value');
+          let label = item.getAttribute('label')
+          
+          if (this.multi) {
+            if (this.values.indexOf(value) !== -1) {
+              if (!items.find(item1 => item1.value == value)) {
+                items.push({ value: value, label: label });
+              }
+              
               item.setAttribute('selected', '');
             } else {
               item.removeAttribute('selected');
             }
-          });
+          } else {
+            if (this.value == value) {
+              if (!items.length) {
+                items.push({ value: value, label: label });
+              }
+              
+              item.setAttribute('selected', '');
+            } else {
+              item.removeAttribute('selected');
+            }
+          }
+        });
+          
+        this.set('selectedItems', items);
+        this.$.selected_items.render();
+      }
+
+      _value_Changed() {
+        if (!this.value_) {
+          if (this.multi) {
+            this.set('values', []);
+          } else {
+            this.set('value', undefined);
+          }
         }
       }
     }

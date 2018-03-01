@@ -13,9 +13,16 @@
       }
     </style>
 
-    <iron-form id="form1">
+    <iron-form id="form">
       <form>
-        <paper-select name="test" searchable required>
+        <paper-select name="test1" required>
+          <paper-item option value="1" label="name1">name1</paper-item>
+          <paper-item option value="2" label="name2">name2</paper-item>
+          <paper-item option value="3" label="name3">name3</paper-item>
+          <paper-item option value="4" label="name4">name4</paper-item>
+          <paper-item option value="5" label="name5">name5</paper-item>
+        </paper-select>
+        <paper-select name="test2" multi required>
           <paper-item option value="1" label="name1">name1</paper-item>
           <paper-item option value="2" label="name2">name2</paper-item>
           <paper-item option value="3" label="name3">name3</paper-item>
@@ -24,7 +31,8 @@
         </paper-select>
       </form>
     </iron-form>
-    <paper-button on-tap="test">Test</paper-button>
+    <paper-button on-tap="validate">Validate</paper-button>
+    <paper-button on-tap="reset">Reset</paper-button>
   </template>
 
   <script>
@@ -42,8 +50,13 @@
         super.connectedCallback();
       }
 
-      test() {
-        this.$.form1.validate();
+      validate() {
+        console.log(this.$.form.serializeForm());
+        this.$.form.validate();
+      }
+
+      reset() {
+        this.$.form.reset();
       }
     }
 
