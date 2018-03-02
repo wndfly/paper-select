@@ -153,10 +153,9 @@
         </div>
       </div>
     </iron-dropdown>
-
-    <input hidden value="{{ value_ }}" name="{{ name }}"
+    
+    <input hidden value="{{ value }}" name="{{ name }}"
            required="{{ required }}" disabled="{{ disabled }}" />
-    </template>
   </template>
 
   <script>
@@ -185,22 +184,9 @@
             observer: '_searchTextChanged'
           },
           value: {
-            type: String,
             notify: true,
             value: undefined,
-            observer: '_valuesChanged'
-          },
-          values: {
-            type: Array,
-            notify: true,
-            value: undefined,
-            observer: '_valuesChanged'
-          },
-          value_: {
-            type: String,
-            notify: true,
-            value: undefined,
-            observer: '_value_Changed'
+            observer: '_valueChanged'
           },
           selectedItems: {
             type: Array,
@@ -263,7 +249,7 @@
 
       validate() {
         this.invalid = this.required && (
-          this.multi && this.values.length == 0 ||
+          this.multi && this.value && this.value.length == 0 ||
           !this.multi && !this.value
         ) ? true : false;
 
@@ -277,11 +263,7 @@
       }
 
       reset() {
-        if (this.multi) {
-          this.set('values', []);
-        } else {
-          this.set('value', undefined);
-        }
+        this.set('value', undefined);
       }
 
       open() {
@@ -358,11 +340,12 @@
 
         let options = Polymer.dom(event).localTarget.
                               assignedNodes().filter((item, index, arr) => {
-                                return item.matches && item.matches('[option]');
+                                return item.matches &&
+                                       item.matches('[option]');
                               });
         
         if (this.multi) {
-          values = this.values ? this.values: [];
+          values = this.value instanceof Array ? this.value: [];
         } else if (this.value) {
           values.push(this.value);
         }
@@ -376,8 +359,8 @@
         values = [...new Set(values)];
 
         if (this.multi) {
-          this.set('values', values);
-        } else if (values.length > 0) {
+          this.set('value', values);
+        } else if (values.length) {
           this.set('value', values[0]);
         }
 
@@ -403,7 +386,7 @@
               items.push(obj);
             }
             
-            this.set('values', items.map(item => item.value));
+            this.set('value', items.map(item => item.value));
           } else {
             if (this.selectedItems.find(item => item.value == obj.value)) {
               this.set('value', undefined);
@@ -414,27 +397,21 @@
         }
       }
 
-      _valuesChanged() {
+      _valueChanged() {
         let items = this.selectedItems.filter((item, index, arr) => {
           if (this.multi) {
-            return this.values.indexOf(item.value) !== -1;
+            return this.value && this.value.indexOf(item.value) !== -1;
           } else {
             return this.value == item.value;
           }
         });
-
-        if (this.multi) {
-          this.set('value_', JSON.stringify(this.values));
-        } else {
-          this.set('value_', this.value);
-        }
 
         this.querySelectorAll('[option]').forEach((item, index, arr) => {
           let value = item.getAttribute('value');
           let label = item.getAttribute('label')
           
           if (this.multi) {
-            if (this.values.indexOf(value) !== -1) {
+            if (this.value && this.value.indexOf(value) !== -1) {
               if (!items.find(item1 => item1.value == value)) {
                 items.push({ value: value, label: label });
               }
@@ -458,16 +435,6 @@
           
         this.set('selectedItems', items);
         this.$.selected_items.render();
-      }
-
-      _value_Changed() {
-        if (!this.value_) {
-          if (this.multi) {
-            this.set('values', []);
-          } else {
-            this.set('value', undefined);
-          }
-        }
       }
     }
 

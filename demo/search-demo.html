@@ -13,7 +13,7 @@
       }
     </style>
 
-    <paper-select name="test" searchable allow-search-event on-search="onSearch" multi values="{{ values }}">
+    <paper-select name="test" searchable allow-search-event on-search="onSearch" multi value="{{ value }}">
       <template is="dom-repeat" items="{{ items }}">
         <paper-item option value$="{{ item.value }}" label$="{{ item.label }}">
           {{ item.label }}
@@ -21,7 +21,7 @@
       </template>
     </paper-select>
     <div>
-      {{ values }}
+      {{ value }}
     </div>
   </template>
 
@@ -59,7 +59,7 @@
             type: Array,
             value: () => []
           },
-          values: {
+          value: {
             type: Array,
             value: () => []
           }
