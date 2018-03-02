@@ -389,7 +389,7 @@
             this.set('value', items.map(item => item.value));
           } else {
             if (this.selectedItems.find(item => item.value == obj.value)) {
-              this.set('value', undefined);
+              this.set('value', null);
             } else {
               this.set('value', obj.value);
             }
