@@ -4,6 +4,7 @@
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 
 <dom-module id="paper-select">
@@ -11,6 +12,7 @@
     <style>
       :host {
         display: block;
+        padding: 8px 0;
 
         --paper-select-primary-color: var(--paper-grey-600);
         --paper-select-primary-disabled-color: var(--paper-grey-400);
@@ -30,10 +32,11 @@
       div#selected {
         position: relative;
         flex-direction: row;
+        align-items: flex-end;
         display: flex;
         flex-wrap: wrap;
         border-bottom: 1px var(--paper-select-primary-color) solid;
-        min-height: 32px;
+        min-height: 46px;        
       }
 
       div#selected label#label {
@@ -41,7 +44,8 @@
         font-size: var(--paper-font-subhead_-_font-size);
         display: block;
         margin: 2px;
-        padding: 8px 0;
+        height: 24px;
+        line-height: 24px;
         width: 100%;
       }
 
@@ -51,6 +55,15 @@
 
       div#selected[focused] label#label {
         color: var(--paper-select-secondary-color);
+        font-size: var(--paper-font-caption_-_font-size);
+        height: 20px;
+        line-height: 20px;
+      }
+
+      div#selected[selected-items] label#label {
+        font-size: var(--paper-font-caption_-_font-size);
+        height: 20px;
+        line-height: 20px;
       }
 
       :host([disabled]) div#selected {
@@ -119,7 +132,8 @@
     </style>
 
     <div id="selected" slot="dropdown-trigger" on-tap="open"
-         focused$="{{ focused }}">
+         focused$="{{ focused }}"
+         selected-items$="{{ _computeArrayBlank(selectedItems) }}">
       <label id="label">{{ label }}</label>
       <dom-repeat items="{{ selectedItems }}" id="selected_items">
         <template>
@@ -144,9 +158,11 @@
                    id="dropdown"
                    on-iron-overlay-closed="close">
       <div slot="dropdown-content">
-        <paper-input value="{{ searchText }}" hidden$="{{ !searchable }}"
-                     no-label-float type="text">
-          <iron-icon icon="search" slot="prefix"></iron-icon>
+        <paper-input no-label-float type="text" value="{{ searchText }}"
+                     hidden$="{{ !searchable }}" placeholder="查找..."
+                     on-keypress="_onSearchKeyPressed">
+          <paper-icon-button slot="suffix" icon="search" on-tap="_onSearch">
+          </paper-icon-button>
         </paper-input>
         <div role="listbox">
           <slot id="slot"></slot>
@@ -180,8 +196,7 @@
           },
           searchText: {
             type: String,
-            value: undefined,
-            observer: '_searchTextChanged'
+            value: undefined
           },
           value: {
             notify: true,
@@ -278,7 +293,13 @@
         this.searchText = undefined;
       }
 
-      _searchTextChanged() {
+      _onSearchKeyPressed(event) {
+        if (event.code == 'Enter') {
+          this._onSearch();
+        }
+      }
+
+      _onSearch() {
         if (this.allowSearchEvent) {
           this.querySelectorAll('[selected]').forEach((item, index, arr) => {
             item.removeAttribute('selected');
@@ -435,6 +456,14 @@
           
         this.set('selectedItems', items);
         this.$.selected_items.render();
+      }
+
+      _computeArrayBlank(arr) {
+        if (arr instanceof Array) {
+          return arr.length > 0;
+        } else {
+          return false;
+        }
       }
     }
 
