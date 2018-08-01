@@ -13,17 +13,18 @@
       :host {
         display: block;
         padding: 8px 0;
+        @apply(--paper-font-body1);
 
         --paper-select-primary-color: var(--paper-grey-600);
         --paper-select-primary-disabled-color: var(--paper-grey-400);
         --paper-select-primary-white-color: var(--paper-grey-50);
         
-        --paper-select-secondary-color: var(--paper-indigo-600);
-        --paper-select-secondary-disabled-color: var(--paper-indigo-300);
-        --paper-select-secondary-white-color: var(--paper-indigo-50);
+        --paper-select-secondary-color: var(--paper-light-blue-a700);
+        --paper-select-secondary-disabled-color: var(--paper-light-blue-300);
+        --paper-select-secondary-white-color: var(--paper-light-blue-50);
         
-        --paper-select-third-color: var(--paper-pink-600);
-        --paper-select-third-disabled-color: var(--paper-pink-300);
+        --paper-select-third-color: var(--paper-amber-600);
+        --paper-select-third-disabled-color: var(--paper-amber-300);
         
         --paper-select-fourth-color: var(--paper-red-600);
         --paper-select-fourth-disabled-color: var(--paper-red-600);
@@ -55,14 +56,14 @@
 
       div#selected[focused] label#label {
         color: var(--paper-select-secondary-color);
-        height: 20px;
-        line-height: 20px;
+        height: 10px;
+        line-height: 10px;
       }
 
       div#selected[selected-items] label#label {
         font-size: var(--paper-font-caption_-_font-size);
-        height: 20px;
-        line-height: 20px;
+        height: 10px;
+        line-height: 10px;
       }
 
       :host([disabled]) div#selected {
@@ -89,8 +90,11 @@
         @apply --shadow-elevation-2dp;
         background-color: var(--paper-select-secondary-color);
         color: var(--paper-select-secondary-white-color);
+        font-size: var(--paper-font-caption_-_font-size);
         margin: 2px;
-        padding: 8px;
+        padding: 5px;
+        height: 17px;
+        line-height: 17px;
         border-radius: 4px;
         display: flex;
       }
@@ -99,8 +103,8 @@
         margin-left: 3px;
         color: var(--paper-select-third-color);
         cursor: pointer;
-        --iron-icon-width: 14px;
-        --iron-icon-height: 14px;
+        --iron-icon-width: 13px;
+        --iron-icon-height: 13px;
         --iron-icon: {
           font-weight: bold;
         };
